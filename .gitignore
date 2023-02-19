@@ -1,0 +1,9 @@
+/zig-cache
+/zig-out
+0_0.tigerbeetle.bench
+dotnet/bin
+dotnet/obj
+c/zig-cache
+c/zig-out
+zig/zig-cache
+zig/zig-out

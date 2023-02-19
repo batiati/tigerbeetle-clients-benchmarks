@@ -1,0 +1,1 @@
+../tigerbeetle/zig/zig build run -Drelease-safe
