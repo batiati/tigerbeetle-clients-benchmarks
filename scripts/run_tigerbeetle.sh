@@ -11,7 +11,7 @@ if [ -f "$FILE" ]; then
     rm "$FILE"
 fi
 
-./tigerbeetle/tigerbeetle format --cluster=0 --replica=0 "$FILE"
+./tigerbeetle/tigerbeetle format --cluster=0 --replica=0 --replica-count=1 "$FILE"
 
 echo "Starting tigerbeetle ..."
 ./tigerbeetle/tigerbeetle start --addresses=3000 "$FILE"

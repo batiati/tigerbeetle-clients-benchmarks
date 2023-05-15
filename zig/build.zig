@@ -50,6 +50,11 @@ fn add_zig_files(exe: *std.build.LibExeObjStep, comptime files: []const []const 
     };
     options.addOption(TracerBackend, "tracer_backend", .none);
 
+    const aof_record_enable = exe.builder.option(bool, "config-aof-record", "Enable AOF Recording.") orelse false;
+    const aof_recovery_enable = exe.builder.option(bool, "config-aof-recovery", "Enable AOF Recovery mode.") orelse false;
+    options.addOption(bool, "config_aof_record", aof_record_enable);
+    options.addOption(bool, "config_aof_recovery", aof_recovery_enable);
+
     const HashLogMode = enum {
         none,
         create,
