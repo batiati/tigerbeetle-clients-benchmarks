@@ -3,10 +3,10 @@ import com.tigerbeetle.*;
 public class Bench {
 
     public static void main(String[] args) {
-        try (var client = new Client(0, new String[] {"127.0.0.1:3000"})) {
+        try (var client = new Client(UInt128.asBytes(0), new String[] {"127.0.0.1:3000"})) {
 
             final int SAMPLES = 1_000_000;
-            final int BATCH_SIZE = 8191;
+            final int BATCH_SIZE = 8190;
 
             // Repeat the same test 10 times and pick the best execution
             for (int tries = 0; tries < 10; tries += 1) {

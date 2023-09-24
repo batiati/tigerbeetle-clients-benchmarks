@@ -1,0 +1,70 @@
+name: Benchmarking
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '13 8 * * 0'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on: [ubuntu-latest]
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.11.0
+      - uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: latest
+      - uses: dlang-community/setup-dlang@v1
+        with:
+          compiler: ldc-latest
+
+      - name: Tigerbeetle Installation
+        run: |
+            chmod +x $PWD/scripts/install.sh;
+            chmod +x $PWD/scripts/run_tigerbeetle.sh;
+            $PWD/scripts/install.sh;
+            $PWD/scripts/run_tigerbeetle.sh
+      
+      - name: Run - C Client
+        run: |
+            cd c
+            $PWD/run.sh
+            cd ..
+      - name: Run - Go Client
+        run: |
+            cd go
+            $PWD/run.sh
+            cd ..
+      - name: Run - D Client
+        run: |
+            cd d
+            $PWD/run.sh
+            cd ..
+      - name: Run - .Net Client
+        run: |
+            cd dotnet
+            $PWD/run.sh
+            cd ..
+      - name: Run - Java Client
+        run: |
+            cd java
+            $PWD/run.sh
+            cd ..
+      - name: Run - Zig Client
+        run: |
+            cd zig
+            $PWD/run.sh
+            cd ..
+
+      - name: Kill TB Process 
+        run: pkill -f tigerbeetle

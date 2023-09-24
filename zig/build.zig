@@ -3,12 +3,15 @@ const builtin = @import("builtin");
 
 pub fn build(b: *std.build.Builder) void {
     const target = b.standardTargetOptions(.{});
-    const mode = b.standardReleaseOptions();
+    const optimize = b.standardOptimizeOption(.{});
 
-    var bench = b.addExecutable("bench", "bench.zig");
-    bench.setBuildMode(mode);
-    bench.setTarget(target);
-    add_zig_files(bench, &.{
+    const bench = b.addExecutable(.{
+        .name = "bench",
+        .target = target,
+        .optimize = optimize,
+        .root_source_file = .{ .path = "bench.zig" },
+    });
+    add_zig_files(b, bench, &.{
         "tigerbeetle.zig",
         "constants.zig",
         "storage.zig",
@@ -21,15 +24,15 @@ pub fn build(b: *std.build.Builder) void {
         "stdx.zig",
     });
 
-    const run_cmd = bench.run();
+    const run_cmd = b.addRunArtifact(bench);
     run_cmd.step.dependOn(b.getInstallStep());
 
     const bench_build = b.step("run", "Run the Zig client bench");
     bench_build.dependOn(&run_cmd.step);
 }
 
-fn add_zig_files(exe: *std.build.LibExeObjStep, comptime files: []const []const u8) void {
-    const options = exe.builder.addOptions();
+fn add_zig_files(b: *std.Build, exe: *std.Build.Step.Compile, comptime files: []const []const u8) void {
+    const options = b.addOptions();
     const ConfigBase = enum {
         production,
         development,
@@ -43,6 +46,12 @@ fn add_zig_files(exe: *std.build.LibExeObjStep, comptime files: []const []const 
         .default,
     );
 
+    options.addOption(
+        std.log.Level,
+        "config_log_level",
+        .info,
+    );
+
     const TracerBackend = enum {
         none,
         perfetto,
@@ -50,8 +59,8 @@ fn add_zig_files(exe: *std.build.LibExeObjStep, comptime files: []const []const 
     };
     options.addOption(TracerBackend, "tracer_backend", .none);
 
-    const aof_record_enable = exe.builder.option(bool, "config-aof-record", "Enable AOF Recording.") orelse false;
-    const aof_recovery_enable = exe.builder.option(bool, "config-aof-recovery", "Enable AOF Recovery mode.") orelse false;
+    const aof_record_enable = b.option(bool, "config-aof-record", "Enable AOF Recording.") orelse false;
+    const aof_recovery_enable = b.option(bool, "config-aof-recovery", "Enable AOF Recovery mode.") orelse false;
     options.addOption(bool, "config_aof_record", aof_record_enable);
     options.addOption(bool, "config_aof_recovery", aof_recovery_enable);
 
@@ -61,14 +70,18 @@ fn add_zig_files(exe: *std.build.LibExeObjStep, comptime files: []const []const 
         check,
     };
     options.addOption(HashLogMode, "hash_log_mode", .none);
-    const vsr_options = options.getPackage("vsr_options");
+    const vsr_options = options.createModule();
 
     inline for (files) |file| {
-        var pkg = std.build.Pkg{
-            .name = file,
-            .path = .{ .path = "../tigerbeetle/src/" ++ file },
-            .dependencies = &.{vsr_options},
-        };
-        exe.addPackage(pkg);
+        const pkg = b.createModule(.{
+            .source_file = .{ .path = "../tigerbeetle/src/" ++ file },
+            .dependencies = &.{
+                .{
+                    .name = "vsr_options",
+                    .module = vsr_options,
+                },
+            },
+        });
+        exe.addModule(file, pkg);
     }
 }

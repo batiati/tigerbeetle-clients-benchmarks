@@ -2,16 +2,15 @@
 using System.Diagnostics;
 using TigerBeetle;
 
-public static class Program
-{
-    public static void Main()
-    {
-        using var client = new Client(0, new string[] { "127.0.0.1:3000" });
 
-        const int SAMPLES = 1_000_000;
-        const int BATCH_SIZE = 8191;
-        
-        var stopWatch = new Stopwatch();
+var stopWatch = new Stopwatch();
+const int SAMPLES = 1_000_000;
+const int BATCH_SIZE = 8190;
+using (var client = new Client(
+            clusterID: UInt128.Zero,
+            addresses: new[] { "127.0.0.1:3000" }
+       ))
+    {
 
         // Repeat the same test 10 times and pick the best execution
         for (int tries = 0; tries < 10; tries += 1) {
@@ -55,4 +54,3 @@ public static class Program
             Console.WriteLine($"Transfers per second: {SAMPLES * 1000 / timeTotalMs}\n");
         }
     }
-}

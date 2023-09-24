@@ -2,8 +2,8 @@
 set -eEuo pipefail
 
 echo "Installing TigerBeetle..."
-git submodule init && git submodule update
-(cd tigerbeetle && git submodule init && git submodule update && ./scripts/install_zig.sh)
+git clone --recursive https://github.com/tigerbeetle/tigerbeetle.git
+(cd tigerbeetle && ./scripts/install_zig.sh)
 
 echo "Building TigerBeetle Dotnet..."
 (cd tigerbeetle/src/clients/dotnet && dotnet build -c Release && dotnet pack -c Release)

@@ -1,1 +1,2 @@
-../tigerbeetle/zig/zig build run -Drelease-safe
+#!/usr/bin/env bash
+zig build run -Doptimize=ReleaseSafe

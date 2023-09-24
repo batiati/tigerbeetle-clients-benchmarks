@@ -7,3 +7,6 @@ c/zig-cache
 c/zig-out
 zig/zig-cache
 zig/zig-out
+tigerbeetle/
+build/
+.vscode/

@@ -1,5 +1,5 @@
 module tigerbeetle-bench
 
-go 1.17
+go 1.21
 
-require github.com/tigerbeetledb/tigerbeetle-go v0.0.0-20230515174739-c787f1046cd0
+require github.com/tigerbeetle/tigerbeetle-go v0.14.167

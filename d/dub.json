@@ -1,0 +1,19 @@
+{
+	"name": "tb_client_bench",
+	"authors": ["Matheus Catarino França"],
+	"description": "TigerbeetleDB Bindings for d.",
+	"license": "apache",
+	"targetType": "executable",
+    "targetPath": "bin",
+	"buildTypes": {
+        "release": {
+            "buildOptions": ["releaseMode", "optimize", "inline"],
+			"dflags": ["--betterC", "-boundscheck=on"]
+        },
+		"debug": {
+            "buildOptions": ["debugMode", "debugInfo", "optimize"]
+        }
+    },
+	"lflags": ["-L../c/build/_deps/tigerbeetle-build", "-L../c/build/_deps/tigerbeetle-build/Release"],
+	"libs": ["tb_client", "pthread"]
+}
