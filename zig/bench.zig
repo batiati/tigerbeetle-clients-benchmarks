@@ -1,20 +1,20 @@
 const std = @import("std");
 const panic = std.debug.panic;
 
-const constants = @import("constants.zig");
-const stdx = @import("stdx.zig");
-const IO = @import("io.zig").IO;
-const Storage = @import("storage.zig").Storage;
-const MessagePool = @import("message_pool.zig").MessagePool;
-const MessageBus = @import("message_bus.zig").MessageBusClient;
-const StateMachine = @import("state_machine.zig").StateMachineType(Storage, constants.state_machine_config);
-const RingBuffer = @import("ring_buffer.zig").RingBuffer;
 const vsr = @import("vsr.zig");
+const RingBuffer = vsr.ring_buffer.RingBuffer;
+const StateMachine = vsr.state_machine.StateMachineType(Storage, constants.state_machine_config);
+const MessageBus = vsr.message_bus.MessageBusClient;
+const MessagePool = vsr.message_pool.MessagePool;
+const Storage = vsr.storage.Storage;
+const tb = vsr.tigerbeetle;
 const Client = vsr.Client(StateMachine, MessageBus);
-const tb = @import("tigerbeetle.zig");
+const constants = vsr.constants;
+const IO = vsr.io.IO;
+const stdx = vsr.stdx;
 
 const Result = struct {
-    reply: Client.Error![]const u8,
+    reply: anyerror![]const u8,
     reply_ms: i64,
 };
 
@@ -40,7 +40,7 @@ pub fn main() !void {
         allocator,
         client_id,
         cluster_id,
-        @intCast(u8, address.len),
+        @as(u8, @intCast(address.len)),
         &message_pool,
         .{
             .configuration = address[0..],
@@ -50,7 +50,7 @@ pub fn main() !void {
     defer client.deinit(allocator);
 
     const samples = 1_000_000;
-    const batch_size = 8191;
+    const batch_size = 8190;
 
     // Repeat the same test 10 times and pick the best execution
     var tries: u32 = 0;
@@ -67,8 +67,7 @@ pub fn main() !void {
                 batch[j].id = 0;
                 batch[j].debit_account_id = 0;
                 batch[j].credit_account_id = 0;
-                batch[j].user_data = 0;
-                batch[j].reserved = 0;
+                batch[j].user_data_128 = 0;
                 batch[j].pending_id = 0;
                 batch[j].timeout = 0;
                 batch[j].ledger = 2;
@@ -102,8 +101,6 @@ fn send(
     batch_transfers: []tb.Transfer,
 ) !i64 {
     const message = client.get_message();
-    defer client.unref(message);
-
     const payload = std.mem.sliceAsBytes(batch_transfers);
 
     stdx.copy_disjoint(
@@ -117,7 +114,7 @@ fn send(
     const start_ms = std.time.milliTimestamp();
 
     client.request(
-        @intCast(u128, @ptrToInt(&result)),
+        @as(u128, @intCast(@intFromPtr(&result))),
         send_complete,
         .create_transfers,
         message,
@@ -149,11 +146,11 @@ fn send(
 fn send_complete(
     user_data: u128,
     operation: StateMachine.Operation,
-    reply: Client.Error![]const u8,
+    reply: []const u8,
 ) void {
     _ = operation;
 
-    const result_ptr = @intToPtr(*?Result, @intCast(u64, user_data));
+    const result_ptr = @as(*?Result, @ptrFromInt(@as(u64, @intCast(user_data))));
     result_ptr.* = Result{
         .reply = reply,
         .reply_ms = std.time.milliTimestamp(),

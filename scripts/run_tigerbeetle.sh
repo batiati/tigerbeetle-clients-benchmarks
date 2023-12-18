@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
 
+PATH=$PATH:$PWD/tigerbeetle/zig-out/bin
+
 echo "Building TigerBeetle..."
-(cd tigerbeetle && ./zig/zig build install -Dcpu=baseline -Drelease-safe)
+(cd tigerbeetle && ./zig/zig build -Dcpu=baseline -Doptimize=ReleaseSafe)
 
 echo "Formatting replica ..."
 
@@ -11,7 +13,7 @@ if [ -f "$FILE" ]; then
     rm "$FILE"
 fi
 
-./tigerbeetle/tigerbeetle format --cluster=0 --replica=0 --replica-count=1 "$FILE"
+tigerbeetle format --cluster=0 --replica=0 --replica-count=1 "$FILE"
 
 echo "Starting tigerbeetle ..."
-./tigerbeetle/tigerbeetle start --addresses=3000 "$FILE"
+tigerbeetle start --addresses=3000 "$FILE"&

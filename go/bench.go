@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	tb "github.com/tigerbeetledb/tigerbeetle-go"
-	tb_types "github.com/tigerbeetledb/tigerbeetle-go/pkg/types"
+	tb "github.com/tigerbeetle/tigerbeetle-go"
+	tb_types "github.com/tigerbeetle/tigerbeetle-go/pkg/types"
 )
 
 func uint128(value string) tb_types.Uint128 {
@@ -18,7 +18,7 @@ func uint128(value string) tb_types.Uint128 {
 }
 
 func main() {
-	client, err := tb.NewClient(0, []string{"3000"}, 1)
+	client, err := tb.NewClient(tb_types.ToUint128(0), []string{"3000"}, 1)
 	if err != nil {
 		log.Printf("Error creating client: %s", err)
 		return
@@ -26,7 +26,7 @@ func main() {
 	defer client.Close()
 
 	SAMPLES := 1_000_000
-	BATCH_SIZE := 8191
+	BATCH_SIZE := 8190
 
 	// Repeat the same test 10 times and pick the best execution
 	for tries := 0; tries < 10; tries += 1 {
@@ -42,7 +42,7 @@ func main() {
 					CreditAccountID: uint128("0"),
 					Ledger:          1,
 					Code:            1,
-					Amount:          10,
+					Amount:          tb_types.ToUint128(10),
 				}
 			}
 
